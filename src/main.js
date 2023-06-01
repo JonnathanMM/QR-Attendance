@@ -3,6 +3,7 @@ import App from './App.vue'
 
 
 import './assets/css/app.css'
+import './assets/css/styles.css'
 
 import router from './router'
 
