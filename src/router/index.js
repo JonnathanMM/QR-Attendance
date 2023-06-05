@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
  
 import dashboard from '../pages/main/dashboard'
-import home from '../pages/home'
-import profile from '../pages/profile'
+import employees from '../pages/employees'
+import settings from '../pages/settings'
+import scanner from '../pages/scanner'
+import attendance from '../pages/attendance'
+import qrDownload from '../pages/qrDownload'
 
 
 const routes = [
@@ -12,14 +15,29 @@ const routes = [
     component: dashboard,
     children: [
        {
-        name: 'home',
-        path: '/home',
-        component:home
+        name: 'employees',
+        path: '/employees',
+        component:employees
       },
       {
-        name: 'profile',
-        path: '/profile',
-        component:profile
+        name: 'scanner',
+        path: '/scanner',
+        component:scanner
+      },
+      {
+        name: 'attendance',
+        path: '/attendance',
+        component:attendance
+      },
+      {
+        name: 'settings',
+        path: '/settings',
+        component:settings
+      },
+      {
+        name: 'qrDownload',
+        path: '/qrDownload',
+        component:qrDownload
       }
     ]
   },
