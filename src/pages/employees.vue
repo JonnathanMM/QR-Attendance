@@ -1,7 +1,8 @@
 <template>
   <div class="employees-container">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-white text-lg">Lista de Empleados</h2>
+      
+      <h2 class="text-xl">Lista de Empleados</h2>
       <button
         class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
         @click="openForm('create')"
@@ -9,8 +10,7 @@
         Agregar Empleado
       </button>
     </div>
-
-    <table class="w-full bg-gray-800 rounded-lg">
+    <table class="w-full bg-gray-900">
       <thead>
         <tr>
           <th class="py-2 px-4 text-gray-300">Código</th>
@@ -19,7 +19,7 @@
           <th class="py-2 px-4 text-gray-300">Acciones</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="bg-gray-800">
         <tr
           v-for="employee in employees"
           :key="employee.id"
