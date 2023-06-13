@@ -5,7 +5,6 @@ import employees from '../pages/employees'
 import settings from '../pages/settings'
 import scanner from '../pages/scanner'
 import attendance from '../pages/attendance'
-import qrDownload from '../pages/qrDownload'
 
 
 const routes = [
@@ -33,11 +32,6 @@ const routes = [
         name: 'settings',
         path: '/settings',
         component:settings
-      },
-      {
-        name: 'qrDownload',
-        path: '/qrDownload',
-        component:qrDownload
       }
     ]
   },
