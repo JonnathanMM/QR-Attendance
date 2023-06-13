@@ -1,13 +1,18 @@
 <template>
   <div class="employees-container">
     <div class="flex justify-between items-center mb-4">
-      
       <h2 class="text-xl">Lista de Empleados</h2>
       <button
         class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
         @click="openForm('create')"
       >
         Agregar Empleado
+      </button>
+      <button
+        class="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
+        @click="selectEmployee"
+      >
+        Generar QR
       </button>
     </div>
     <table class="w-full bg-gray-900">
@@ -33,7 +38,7 @@
               class="text-blue-500 hover:text-blue-700"
               @click="openForm('edit', employee)"
             >
-            <svg
+              <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="1.25em"
                 viewBox="0 0 500 512"
@@ -50,8 +55,6 @@
               class="text-red-500 hover:text-red-700"
               @click="deleteEmployee(employee)"
             >
-              
-
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="1.25em"
@@ -128,12 +131,62 @@ export default {
         nombre: "",
         departamento: "",
       },
+      selectedEmployeeId: null,
     };
   },
   mounted() {
     this.fetchEmployees();
   },
   methods: {
+    selectEmployee() {
+    // Mostrar ventana emergente para seleccionar empleado
+    Swal.fire({
+      title: "Seleccionar Empleado",
+      input: "select",
+      inputOptions: this.getEmployeeOptions(),
+      inputPlaceholder: "Seleccione un empleado",
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) {
+          return "Debe seleccionar un empleado";
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.selectedEmployeeId = result.value;
+        this.generateQRCode();
+      }
+    });
+  },
+  getEmployeeOptions() {
+    const options = {};
+    this.employees.forEach((employee) => {
+      options[employee.id] = employee.nombre;
+    });
+    return options;
+  },
+  generateQRCode() {
+    const employeeId = this.selectedEmployeeId;
+
+    // Verificar si se ha seleccionado un empleado
+    if (!employeeId) {
+      return;
+    }
+
+    // Generar el código QR
+    const qrCodeData = `https://example.com/scan?id=${employeeId}`; // Reemplaza "https://example.com/scan" con la URL real de tu escáner
+    const qrCodeImage = document.createElement("img");
+    qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+      qrCodeData
+    )}`;
+
+    // Abrir una nueva pestaña con la imagen del código QR
+    const newTab = window.open();
+    newTab.document.body.appendChild(qrCodeImage);
+  },
+
+
+
     fetchEmployees() {
       axios
         .get("http://localhost:3000/api/registros")
