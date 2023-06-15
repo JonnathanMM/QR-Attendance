@@ -27,7 +27,7 @@
 }
 
 .scanner-controls {
-  margin-bottom: 20px;
+  margin-bottom: 50px;
 }
 
 .scanner-controls button {
@@ -53,7 +53,7 @@
 .scanner-video {
   position: relative;
   width: 300px;
-  height: 300px;
+  height: 402px;
   border: 2px solid #333;
   margin-bottom: 20px;
 }
@@ -75,6 +75,7 @@ export default {
   },
   mounted() {
     this.initializeScanner();
+  window.addEventListener('resize', this.adjustVideoSize);
   },
   methods: {
     initializeScanner() {
@@ -95,20 +96,47 @@ export default {
         this.startScanner();
       }
     },
-    startScanner() {
-      this.isScannerActive = true;
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          const video = this.$refs.video;
-          video.srcObject = stream;
-          video.play();
-          this.scanFrame();
-        })
-        .catch(error => {
-          console.error('Error al acceder a la cámara:', error);
-          this.stopScanner();
-        });
-    },
+    isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+},
+
+startScanner() {
+  this.isScannerActive = true;
+  const constraints = {
+    video: {
+      facingMode: this.isMobileDevice() ? 'environment' : 'user'
+    }
+  };
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      const video = this.$refs.video;
+      video.srcObject = stream;
+
+      video.onloadedmetadata = () => {
+        video.play();
+        this.adjustVideoSize();
+        this.scanFrame();
+      };
+    })
+    .catch(error => {
+      console.error('Error al acceder a la cámara:', error);
+      this.stopScanner();
+    });
+},
+adjustVideoSize() {
+  const video = this.$refs.video;
+  const scannerVideo = this.$el.querySelector('.scanner-video');
+  const scannerVideoRect = scannerVideo.getBoundingClientRect();
+  const videoAspectRatio = video.videoWidth / video.videoHeight;
+  const desiredWidth = scannerVideoRect.width;
+  const desiredHeight = scannerVideoRect.width / videoAspectRatio;
+
+  video.style.width = `${desiredWidth}px`;
+  video.style.height = `${desiredHeight}px`;
+  video.style.objectFit = 'cover';
+},
+
     stopScanner() {
       this.isScannerActive = false;
       const video = this.$refs.video;
