@@ -166,24 +166,35 @@ export default {
     return options;
   },
   generateQRCode() {
-    const employeeId = this.selectedEmployeeId;
+  const employeeId = this.selectedEmployeeId;
 
-    // Verificar si se ha seleccionado un empleado
-    if (!employeeId) {
-      return;
-    }
+  // Verificar si se ha seleccionado un empleado
+  if (!employeeId) {
+    return;
+  }
 
-    // Generar el código QR
-    const qrCodeData = `https://example.com/scan?id=${employeeId}`; // Reemplaza "https://example.com/scan" con la URL real de tu escáner
-    const qrCodeImage = document.createElement("img");
-    qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
-      qrCodeData
-    )}`;
+  // Generar el código QR
+  const qrCodeData = `${employeeId}`;
+  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+    qrCodeData
+  )}`;
 
-    // Abrir una nueva pestaña con la imagen del código QR
-    const newTab = window.open();
-    newTab.document.body.appendChild(qrCodeImage);
-  },
+  // Obtener la imagen del código QR como un blob
+  fetch(qrCodeImageUrl)
+    .then((response) => response.blob())
+    .then((blob) => {
+      // Crear un enlace de descarga
+      const downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = "codigo_qr.png";
+
+      // Simular el clic en el enlace de descarga para iniciar la descarga automáticamente
+      downloadLink.click();
+
+      // Liberar el objeto URL creado para evitar pérdidas de memoria
+      URL.revokeObjectURL(downloadLink.href);
+    });
+},
 
 
 
