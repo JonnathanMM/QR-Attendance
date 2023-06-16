@@ -120,6 +120,19 @@
 import Swal from "sweetalert2";
 import axios from "axios";
 
+async function buscarNombreEmpleadoPorId(id) {
+  try {
+    const response = await axios.get(`http://localhost:3000/api/registros/${id}`);
+    const empleado = response.data;
+    const nombreEmpleado = empleado.nombre;
+    return nombreEmpleado;
+  } catch (error) {
+    console.error(error);
+    // Manejar el error de alguna manera apropiada
+    throw new Error("Error al buscar el nombre del empleado");
+  }
+}
+
 export default {
   data() {
     return {
@@ -166,35 +179,44 @@ export default {
     return options;
   },
   generateQRCode() {
-  const employeeId = this.selectedEmployeeId;
+    const employeeId = this.selectedEmployeeId;
 
-  // Verificar si se ha seleccionado un empleado
-  if (!employeeId) {
-    return;
-  }
+    // Verificar si se ha seleccionado un empleado
+    if (!employeeId) {
+      return;
+    }
 
-  // Generar el código QR
-  const qrCodeData = `${employeeId}`;
-  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
-    qrCodeData
-  )}`;
+    // Buscar el nombre del empleado por el ID
+    buscarNombreEmpleadoPorId(employeeId)
+      .then((nombreEmpleado) => {
+        // Generar el código QR
+        const qrCodeData = `${employeeId}`;
+        const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+          qrCodeData
+        )}`;
 
-  // Obtener la imagen del código QR como un blob
-  fetch(qrCodeImageUrl)
-    .then((response) => response.blob())
-    .then((blob) => {
-      // Crear un enlace de descarga
-      const downloadLink = document.createElement("a");
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = "codigo_qr.png";
+        // Obtener la imagen del código QR como un blob
+        fetch(qrCodeImageUrl)
+          .then((response) => response.blob())
+          .then((blob) => {
+            // Crear un enlace de descarga
+            const downloadLink = document.createElement("a");
+            downloadLink.href = URL.createObjectURL(blob);
 
-      // Simular el clic en el enlace de descarga para iniciar la descarga automáticamente
-      downloadLink.click();
+            downloadLink.download = `QR_${nombreEmpleado}`;
 
-      // Liberar el objeto URL creado para evitar pérdidas de memoria
-      URL.revokeObjectURL(downloadLink.href);
-    });
-},
+            // Simular el clic en el enlace de descarga para iniciar la descarga automáticamente
+            downloadLink.click();
+
+            // Liberar el objeto URL creado para evitar pérdidas de memoria
+            URL.revokeObjectURL(downloadLink.href);
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+        // Manejar el error de alguna manera apropiada
+      });
+  },
 
 
 
