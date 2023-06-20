@@ -53,9 +53,9 @@
 .scanner-video {
   position: relative;
   width: 300px;
-  height: 402px;
+  height: 304px;
   border: 2px solid #333;
-  margin-bottom: 20px;
+  background-color: #333;
 }
 
 .scanner-result {
@@ -132,8 +132,8 @@ adjustVideoSize() {
   const desiredWidth = scannerVideoRect.width;
   const desiredHeight = scannerVideoRect.width / videoAspectRatio;
 
-  video.style.width = `${desiredWidth}px`;
-  video.style.height = `${desiredHeight}px`;
+  video.style.width = `300px`;
+  video.style.height = `300px`;
   video.style.objectFit = 'cover';
 },
 
