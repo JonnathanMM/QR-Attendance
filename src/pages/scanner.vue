@@ -56,8 +56,8 @@
 
 .scanner-video {
   position: relative;
-  width: 300px;
-  height: 304px;
+  width: 150px;
+  height: 150px;
   border: 2px solid #333;
   background-color: #333;
 }
@@ -172,7 +172,7 @@ export default {
     },
     performSearch() {
       // Realizar la búsqueda en el servidor utilizando Axios
-      axios.get(`http://localhost:3000/api/registros/${this.result}`)
+      axios.get(`https://192.168.100.84:3000/api/registros/${this.result}`)
         .then(response => {
           // Procesar la respuesta del servidor
           const data2 = response.data;
