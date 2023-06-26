@@ -1,10 +1,7 @@
 <template>
   <div class="scanner">
     <div class="scanner-controls">
-      <button
-        :class="{ active: isScannerActive }"
-        @click="toggleScanner"
-      >
+      <button :class="{ active: isScannerActive }" @click="toggleScanner">
         <span v-if="isScannerActive">Desactivar Escáner</span>
         <span v-else>Activar Escáner</span>
       </button>
@@ -13,7 +10,14 @@
       <video ref="video" v-show="isScannerActive" autoplay></video>
     </div>
     <div class="scanner-result" v-if="result">
-      Resultado: {{ result }}
+      <div class="result-container">
+        <h2>Resultado: {{ result }}</h2>
+      </div>
+    </div>
+    <div class="search-result" v-if="searchResult">
+      <div class="result-container">
+        <h2>Nombre: {{ searchResult }}</h2>
+      </div>
     </div>
   </div>
 </template>
@@ -58,24 +62,23 @@
   background-color: #333;
 }
 
-.scanner-result {
-  font-size: 18px;
-}
 </style>
 
 <script>
 import qrcode from 'qrcode-reader';
+import axios from 'axios';
 
 export default {
   data() {
     return {
       isScannerActive: false,
-      result: null
+      result: null,
+      searchResult: null
     };
   },
   mounted() {
     this.initializeScanner();
-  window.addEventListener('resize', this.adjustVideoSize);
+    window.addEventListener('resize', this.adjustVideoSize);
   },
   methods: {
     initializeScanner() {
@@ -87,6 +90,9 @@ export default {
         }
 
         this.result = result.result;
+        if (this.result !== null) {
+          this.performSearch();
+        }
       };
     },
     toggleScanner() {
@@ -97,46 +103,46 @@ export default {
       }
     },
     isMobileDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-},
-
-startScanner() {
-  this.isScannerActive = true;
-  const constraints = {
-    video: {
-      facingMode: this.isMobileDevice() ? 'environment' : 'user'
-    }
-  };
-
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => {
-      const video = this.$refs.video;
-      video.srcObject = stream;
-
-      video.onloadedmetadata = () => {
-        video.play();
-        this.adjustVideoSize();
-        this.scanFrame();
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    },
+    startScanner() {
+      this.isScannerActive = true;
+      const constraints = {
+        video: {
+          facingMode: this.isMobileDevice() ? 'environment' : 'user'
+        }
       };
-    })
-    .catch(error => {
-      console.error('Error al acceder a la cámara:', error);
-      this.stopScanner();
-    });
-},
-adjustVideoSize() {
-  const video = this.$refs.video;
-  const scannerVideo = this.$el.querySelector('.scanner-video');
-  const scannerVideoRect = scannerVideo.getBoundingClientRect();
-  const videoAspectRatio = video.videoWidth / video.videoHeight;
-  const desiredWidth = scannerVideoRect.width;
-  const desiredHeight = scannerVideoRect.width / videoAspectRatio;
 
-  video.style.width = `300px`;
-  video.style.height = `300px`;
-  video.style.objectFit = 'cover';
-},
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          const video = this.$refs.video;
+          video.srcObject = stream;
 
+          video.onloadedmetadata = () => {
+            video.play();
+            
+            
+            this.adjustVideoSize();
+            this.scanFrame();
+          };
+        })
+        .catch(error => {
+          console.error('Error al acceder a la cámara:', error);
+          this.stopScanner();
+        });
+    },
+    adjustVideoSize() {
+      const video = this.$refs.video;
+      const scannerVideo = this.$el.querySelector('.scanner-video');
+      const scannerVideoRect = scannerVideo.getBoundingClientRect();
+      const videoAspectRatio = video.videoWidth / video.videoHeight;
+      const desiredWidth = scannerVideoRect.width;
+      const desiredHeight = scannerVideoRect.width / videoAspectRatio;
+
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.objectFit = 'cover';
+    },
     stopScanner() {
       this.isScannerActive = false;
       const video = this.$refs.video;
@@ -163,6 +169,21 @@ adjustVideoSize() {
 
         requestAnimationFrame(this.scanFrame);
       }
+    },
+    performSearch() {
+      // Realizar la búsqueda en el servidor utilizando Axios
+      axios.get(`http://localhost:3000/api/registros/${this.result}`)
+        .then(response => {
+          // Procesar la respuesta del servidor
+          const data2 = response.data;
+          const data = data2.nombre;
+          // Actualizar el resultado de la búsqueda
+          this.searchResult = data;
+        })
+        .catch(error => {
+          console.error('Error al realizar la búsqueda:', error);
+          // Manejar el error de manera apropiada, como mostrar un mensaje de error en la interfaz de usuario
+        });
     }
   }
 };
