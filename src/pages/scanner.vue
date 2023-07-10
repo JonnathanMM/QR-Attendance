@@ -18,7 +18,7 @@
 
     <div class="message" v-if="message">
       <div class="message-container">
-        <h2>Status: {{ message }}</h2>
+        <h2>{{ message }}</h2>
       </div>
     </div>
   </div>
@@ -187,15 +187,20 @@ export default {
       // Realizar otra solicitud para comprobar si hay registros
       axios.get(`https://192.168.100.84:3000/api/attendanceSearch/${this.result}`)
         .then((response) => {
-          if (response.data != null) {
-            this.message = "Asistencia existente";
-          } else {
+          
+          if (response.data == null) {
             this.message = "Registrado";
+
+          } else {
+          this.message = "Asistencia existente";
           }
         })
         .catch((error) => {
           console.error("Error al realizar la búsqueda de registros:", error);
-          this.message = "Registrado";
+          axios.post("https://192.168.100.84:3000/api/registroA", {
+            empleado: this.result,
+          })
+          this.message = "Asistencia registrada";
         });
     })
     .catch((error) => {
