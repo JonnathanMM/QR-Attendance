@@ -9,11 +9,7 @@
     <div class="scanner-video">
       <video ref="video" v-show="isScannerActive" autoplay></video>
     </div>
-    <div class="scanner-result" v-if="result">
-      <div class="result-container">
-        <h2>Resultado: {{ result }}</h2>
-      </div>
-    </div>
+    
     <div class="search-result" v-if="searchResult">
       <div class="result-container">
         <h2>Nombre: {{ searchResult }}</h2>
