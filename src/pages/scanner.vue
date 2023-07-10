@@ -76,6 +76,7 @@ export default {
       result: null,
       searchResult: null,
       message: null,
+      isProcessing: false, // Agregar la propiedad isProcessing
     };
   },
   mounted() {
@@ -175,40 +176,63 @@ export default {
       }
     },
     performSearch() {
-  // Realizar la búsqueda en el servidor utilizando Axios
-  axios.get(`https://192.168.100.84:3000/api/registros/${this.result}`)
-    .then((response) => {
-      // Procesar la respuesta del servidor
-      const data2 = response.data;
-      const data = data2.nombre;
-      // Actualizar el resultado de la búsqueda
-      this.searchResult = data;
+      if (this.isProcessing) {
+        return; // Evitar realizar una nueva solicitud si ya se está procesando una
+      }
+      this.isProcessing = true; // Marcar como procesando
 
-      // Realizar otra solicitud para comprobar si hay registros
-      axios.get(`https://192.168.100.84:3000/api/attendanceSearch/${this.result}`)
+      // Realizar la búsqueda en el servidor utilizando Axios
+      axios
+        .get(`https://192.168.100.84:3000/api/registros/${this.result}`)
         .then((response) => {
-          
-          if (response.data == null) {
-            this.message = "Registrado";
+          // Procesar la respuesta del servidor
+          const data2 = response.data;
+          const data = data2.nombre;
+          // Actualizar el resultado de la búsqueda
+          this.searchResult = data;
 
-          } else {
-          this.message = "Asistencia existente";
-          }
+          // Realizar otra solicitud para comprobar si hay registros
+          axios
+            .get(
+              `https://192.168.100.84:3000/api/attendanceSearch/${this.result}`
+            )
+            .then((response) => {
+              if (response.data == null) {
+                // No hay registros existentes, realizar el registro
+                axios
+                  .post("https://192.168.100.84:3000/api/registroA", {
+                    empleado: this.result,
+                  })
+                  .then(() => {
+                    this.message = "Asistencia registrada";
+                  })
+                  .catch((error) => {
+                    console.error(error);
+                  })
+                  .finally(() => {
+                    this.isProcessing = false; // Marcar como no procesando independientemente del resultado de la solicitud
+                  });
+              } else {
+                this.message = "Asistencia existente";
+                this.isProcessing = false; // Marcar como no procesando una vez que se complete la solicitud
+              }
+            })
+            .catch((error) => {
+              console.error(
+                "Error al realizar la búsqueda de registros:",
+                error
+              );
+              this.message = "Error al realizar la búsqueda de registros";
+              this.isProcessing = false; // Marcar como no procesando en caso de error
+            });
         })
         .catch((error) => {
-          console.error("Error al realizar la búsqueda de registros:", error);
-          axios.post("https://192.168.100.84:3000/api/registroA", {
-            empleado: this.result,
-          })
-          this.message = "Asistencia registrada";
+          console.error("Error al realizar la búsqueda:", error);
+          // Manejar el error de manera apropiada, como mostrar un mensaje de error en la interfaz de usuario
+          this.message = "Error al realizar la búsqueda";
+          this.isProcessing = false; // Marcar como no procesando en caso de error
         });
-    })
-    .catch((error) => {
-      console.error("Error al realizar la búsqueda:", error);
-      // Manejar el error de manera apropiada, como mostrar un mensaje de error en la interfaz de usuario
-    });
-}
-
+    },
   },
 };
 </script>
