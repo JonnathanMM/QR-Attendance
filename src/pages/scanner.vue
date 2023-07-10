@@ -9,19 +9,18 @@
     <div class="scanner-video">
       <video ref="video" v-show="isScannerActive" autoplay></video>
     </div>
-    
+
     <div class="search-result" v-if="searchResult">
       <div class="result-container">
         <h2>Nombre: {{ searchResult }}</h2>
       </div>
     </div>
 
-    <div class="mesage" v-if="mesage">
-      <div class="mesage-container">
-        <h2>Status: {{ mesage }}</h2>
+    <div class="message" v-if="message">
+      <div class="message-container">
+        <h2>Status: {{ message }}</h2>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -64,12 +63,11 @@
   border: 2px solid #333;
   background-color: #333;
 }
-
 </style>
 
 <script>
-import qrcode from 'qrcode-reader';
-import axios from 'axios';
+import qrcode from "qrcode-reader";
+import axios from "axios";
 
 export default {
   data() {
@@ -77,19 +75,19 @@ export default {
       isScannerActive: false,
       result: null,
       searchResult: null,
-      mesage: null
+      message: null,
     };
   },
   mounted() {
     this.initializeScanner();
-    window.addEventListener('resize', this.adjustVideoSize);
+    window.addEventListener("resize", this.adjustVideoSize);
   },
   methods: {
     initializeScanner() {
       this.qr = new qrcode();
       this.qr.callback = (error, result) => {
         if (error) {
-          console.error('Error al leer el código QR:', error);
+          console.error("Error al leer el código QR:", error);
           return;
         }
 
@@ -107,60 +105,62 @@ export default {
       }
     },
     isMobileDevice() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
     },
     startScanner() {
       this.isScannerActive = true;
       const constraints = {
         video: {
-          facingMode: this.isMobileDevice() ? 'environment' : 'user'
-        }
+          facingMode: this.isMobileDevice() ? "environment" : "user",
+        },
       };
 
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then(stream => {
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then((stream) => {
           const video = this.$refs.video;
           video.srcObject = stream;
 
           video.onloadedmetadata = () => {
             video.play();
-            
-            
+
             this.adjustVideoSize();
             this.scanFrame();
           };
         })
-        .catch(error => {
-          console.error('Error al acceder a la cámara:', error);
+        .catch((error) => {
+          console.error("Error al acceder a la cámara:", error);
           this.stopScanner();
         });
     },
     adjustVideoSize() {
       const video = this.$refs.video;
-      const scannerVideo = this.$el.querySelector('.scanner-video');
+      const scannerVideo = this.$el.querySelector(".scanner-video");
       const scannerVideoRect = scannerVideo.getBoundingClientRect();
       const videoAspectRatio = video.videoWidth / video.videoHeight;
       const desiredWidth = scannerVideoRect.width;
       const desiredHeight = scannerVideoRect.width / videoAspectRatio;
 
-      video.style.width = '100%';
-      video.style.height = '100%';
-      video.style.objectFit = 'cover';
+      video.style.width = "100%";
+      video.style.height = "100%";
+      video.style.objectFit = "cover";
     },
     stopScanner() {
       this.isScannerActive = false;
       const video = this.$refs.video;
       if (video && video.srcObject) {
         const tracks = video.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
+        tracks.forEach((track) => track.stop());
         video.srcObject = null;
       }
     },
     scanFrame() {
       if (this.isScannerActive) {
         const video = this.$refs.video;
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
 
         if (video.readyState === video.HAVE_ENOUGH_DATA) {
           const videoWidth = video.videoWidth;
@@ -168,39 +168,42 @@ export default {
           canvas.width = videoWidth;
           canvas.height = videoHeight;
           context.drawImage(video, 0, 0, videoWidth, videoHeight);
-          this.qr.decode(canvas.toDataURL('image/webp'));
+          this.qr.decode(canvas.toDataURL("image/webp"));
         }
 
         requestAnimationFrame(this.scanFrame);
       }
     },
     performSearch() {
-      // Realizar la búsqueda en el servidor utilizando Axios
-      axios.get(`https://192.168.100.84:3000/api/registros/${this.result}`)
-        .then(response => {
-          // Procesar la respuesta del servidor
-          const data2 = response.data;
-          const data = data2.nombre;
-          // Actualizar el resultado de la búsqueda
-          this.searchResult = data;
+  // Realizar la búsqueda en el servidor utilizando Axios
+  axios.get(`https://192.168.100.84:3000/api/registros/${this.result}`)
+    .then((response) => {
+      // Procesar la respuesta del servidor
+      const data2 = response.data;
+      const data = data2.nombre;
+      // Actualizar el resultado de la búsqueda
+      this.searchResult = data;
 
-          //registrar
-          axios.post("https://192.168.100.84:3000/api/registroA", {
-            empleado: this.result,
-          })
-          .then((response) => {
-            this.mesage = "Registrado";
-          })
-          
+      // Realizar otra solicitud para comprobar si hay registros
+      axios.get(`https://192.168.100.84:3000/api/attendanceSearch/${this.result}`)
+        .then((response) => {
+          if (response.data != null) {
+            this.message = "Asistencia existente";
+          } else {
+            this.message = "Registrado";
+          }
         })
-
-        
-
-        .catch(error => {
-          console.error('Error al realizar la búsqueda:', error);
-          // Manejar el error de manera apropiada, como mostrar un mensaje de error en la interfaz de usuario
+        .catch((error) => {
+          console.error("Error al realizar la búsqueda de registros:", error);
+          this.message = "Registrado";
         });
-    }
-  }
+    })
+    .catch((error) => {
+      console.error("Error al realizar la búsqueda:", error);
+      // Manejar el error de manera apropiada, como mostrar un mensaje de error en la interfaz de usuario
+    });
+}
+
+  },
 };
 </script>
