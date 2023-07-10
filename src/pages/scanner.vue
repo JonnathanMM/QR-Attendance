@@ -15,6 +15,13 @@
         <h2>Nombre: {{ searchResult }}</h2>
       </div>
     </div>
+
+    <div class="mesage" v-if="mesage">
+      <div class="mesage-container">
+        <h2>Status: {{ mesage }}</h2>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -69,7 +76,8 @@ export default {
     return {
       isScannerActive: false,
       result: null,
-      searchResult: null
+      searchResult: null,
+      mesage: null
     };
   },
   mounted() {
@@ -175,7 +183,19 @@ export default {
           const data = data2.nombre;
           // Actualizar el resultado de la búsqueda
           this.searchResult = data;
+
+          //registrar
+          axios.post("https://192.168.100.84:3000/api/registroA", {
+            empleado: this.result,
+          })
+          .then((response) => {
+            this.mesage = "Registrado";
+          })
+          
         })
+
+        
+
         .catch(error => {
           console.error('Error al realizar la búsqueda:', error);
           // Manejar el error de manera apropiada, como mostrar un mensaje de error en la interfaz de usuario

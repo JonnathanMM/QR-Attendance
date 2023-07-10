@@ -122,7 +122,7 @@ import axios from "axios";
 
 async function buscarNombreEmpleadoPorId(id) {
   try {
-    const response = await axios.get(`http://localhost:3000/api/registros/${id}`);
+    const response = await axios.get(`https://localhost:3000/api/registros/${id}`);
     const empleado = response.data;
     const nombreEmpleado = empleado.nombre;
     return nombreEmpleado;
@@ -222,7 +222,7 @@ export default {
 
     fetchEmployees() {
       axios
-        .get("http://localhost:3000/api/registros")
+        .get("https://localhost:3000/api/registros")
         .then((response) => {
           this.employees = response.data;
         })
@@ -243,7 +243,7 @@ export default {
     saveEmployee() {
       if (this.formAction === "Guardar") {
         axios
-          .post("http://localhost:3000/api/registros", {
+          .post("https://localhost:3000/api/registros", {
             nombre: this.selectedEmployee.nombre,
             departamento: this.selectedEmployee.departamento,
           })
@@ -262,7 +262,7 @@ export default {
       } else {
         axios
           .put(
-            `http://localhost:3000/api/registros/${this.selectedEmployee.id}`,
+            `https://localhost:3000/api/registros/${this.selectedEmployee.id}`,
             {
               nombre: this.selectedEmployee.nombre,
               departamento: this.selectedEmployee.departamento,
@@ -295,7 +295,7 @@ export default {
       }).then((result) => {
         if (result.isConfirmed) {
           axios
-            .delete(`http://localhost:3000/api/registros/${employee.id}`)
+            .delete(`https://localhost:3000/api/registros/${employee.id}`)
             .then((response) => {
               Swal.fire(
                 "Empleado eliminado",

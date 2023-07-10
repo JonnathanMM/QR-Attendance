@@ -7,9 +7,9 @@
     <table class="w-full bg-gray-900">
       <thead>
         <tr>
-          <th class="py-2 px-4 text-gray-300">Código</th>
           <th class="py-2 px-4 text-gray-300">Empleado</th>
           <th class="py-2 px-4 text-gray-300">Fecha</th>
+          <th class="py-2 px-4 text-gray-300">Hora</th>
         </tr>
       </thead>
       <tbody class="bg-gray-800">
@@ -18,11 +18,9 @@
           :key="attendance.id"
           class="border-b border-gray-700"
         >
-          <td class="py-2 px-4 text-gray-400">{{ attendance.id }}</td>
           <td class="py-2 px-4 text-gray-400">{{ attendance.empleado }}</td>
           <td class="py-2 px-4 text-gray-400">{{ formatDate(attendance.fecha) }}</td>
-          <td class="py-2 px-4 text-gray-400">
-          </td>
+          <td class="py-2 px-4 text-gray-400">{{ formatTime(attendance.hora) }}</td>
         </tr>
       </tbody>
     </table>
@@ -37,7 +35,7 @@ export default {
     return {
       attendances: [],
       selectedAttendance: {
-        empelado: "",
+        empleado: "",
         fecha: "",
       },
     };
@@ -46,23 +44,24 @@ export default {
     this.fetchAttendances();
   },
   methods: {
-
-    formatDate(timestamp) {
-    const date = new Date(timestamp);
-    const formattedDate = date.toLocaleString(); // Opcional: puedes ajustar el formato de fecha y hora según tus necesidades
-    return formattedDate;
-  },
-
-
     fetchAttendances() {
       axios
-        .get("http://localhost:3000/api/attendance")
+        .get("https://localhost:3000/api/attendance")
         .then((response) => {
           this.attendances = response.data;
         })
         .catch((error) => {
           console.error(error);
         });
+    },
+    formatDate(date) {
+      // Formatear la fecha a día/mes/año
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      return new Date(date).toLocaleDateString(undefined, options);
+    },
+    formatTime(time) {
+      // Formatear la hora a hora:minuto
+      return new Date(`1970-01-01T${time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     },
   },
 };
